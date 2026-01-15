@@ -83,6 +83,19 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.middleware("http")
+async def log_requests(request, call_next):
+    import time
+    start_time = time.time()
+    print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] {request.method} {request.url}")
+    
+    response = await call_next(request)
+    
+    process_time = (time.time() - start_time) * 1000
+    print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] {request.method} {request.url} {response.status_code} - {process_time:.2f}ms")
+    return response
+
+
 
 class ChatRequest(BaseModel):
     notebook_id: str

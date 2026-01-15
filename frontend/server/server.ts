@@ -7,10 +7,19 @@ const host = env.HOST || '0.0.0.0';
 
 const server = http.createServer((req: IncomingMessage, res: ServerResponse) => {
 	// Add custom middleware or logic here if needed
+	const start = Date.now();
+	console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+	
 	handler(req, res, () => {
 		// next function for 404s not handled by SvelteKit (though it usually handles them)
+		console.log(`[${new Date().toISOString()}] 404 Not Found: ${req.url}`);
 		res.statusCode = 404;
 		res.end('Not found');
+	});
+
+	res.on('finish', () => {
+		const duration = Date.now() - start;
+		console.log(`[${new Date().toISOString()}] ${req.method} ${req.url} ${res.statusCode} - ${duration}ms`);
 	});
 });
 

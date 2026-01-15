@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   mongo:
     image: mongo:latest
@@ -76,6 +74,7 @@ services:
       - MONGODB_URI=mongodb://mongo:27017
       - ORIGIN=http://localhost:3000
       - PUBLIC_BACKEND_URL=http://localhost:8008
+      - BACKEND_URL=http://backend:8000
     networks:
       - notebook_net
     restart: unless-stopped
