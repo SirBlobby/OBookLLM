@@ -3,7 +3,7 @@
 # OBookLLM - Open Source NotebookLLM
 
 ![Open Source](https://forthebadge.com/api/badges/generate?primaryLabel=OPEN+SOURCE&secondaryLabel=LOVE&secondaryIcon=heart&secondaryIconColor=%23D14836&primaryBGColor=%23555555&secondaryBGColor=%23ffffff&secondaryTextColor=%23555555)
-![Version](https://forthebadge.com/api/badges/generate?primaryLabel=VERSION&secondaryLabel=0.2.1&primaryBGColor=%23555555&secondaryBGColor=%23ffffff&secondaryTextColor=%23555555)
+![Version](https://forthebadge.com/api/badges/generate?primaryLabel=VERSION&secondaryLabel=0.3.0&primaryBGColor=%23555555&secondaryBGColor=%23ffffff&secondaryTextColor=%23555555)
 
 </div>
 
@@ -125,13 +125,26 @@ The easiest way to run OBookLLM is with Docker Compose. This starts the Frontend
 
 ## Configuration
 
-Create a `.env` file in the root or backend directory to configure providers:
+### Backend `.env`
+Create a `.env` file in the `backend/` directory:
 ```env
 MONGODB_URI=mongodb://localhost:27017
 CHROMA_HOST=localhost
 CHROMA_PORT=8000
 OLLAMA_HOST=http://localhost:11434
 ```
+
+### Frontend `.env`
+Create a `.env` file in the `frontend/` directory:
+```env
+AUTH_SECRET=your-secure-secret-key-here
+AUTH_URL=http://localhost:3000
+MONGODB_URI=mongodb://localhost:27017
+PUBLIC_BACKEND_URL=http://localhost:8008
+PORT=3000
+```
+
+> **Note**: For production deployments, ensure `AUTH_SECRET` is a secure random string. You can generate one with: `openssl rand -base64 32`
 
 ## Contributing
 

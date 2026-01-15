@@ -75,6 +75,8 @@ services:
       - ORIGIN=http://localhost:3000
       - PUBLIC_BACKEND_URL=http://localhost:8008
       - BACKEND_URL=http://backend:8000
+      - AUTH_SECRET=your-secure-secret-key-change-in-production
+      - AUTH_URL=http://localhost:3000
     networks:
       - notebook_net
     restart: unless-stopped

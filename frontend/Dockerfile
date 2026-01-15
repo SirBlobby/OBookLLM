@@ -1,4 +1,4 @@
-FROM oven/bun:latest as builder
+FROM oven/bun:latest AS builder
 
 WORKDIR /app
 COPY package.json bun.lockb* ./
@@ -20,6 +20,7 @@ COPY --from=builder /app/server server/
 EXPOSE 3000
 ENV NODE_ENV=production
 ENV ORIGIN=http://localhost:3000
+ENV AUTH_URL=http://localhost:3000
 
 # Run the custom server
 CMD [ "bun", "server/server.ts" ]
