@@ -1,5 +1,5 @@
 import { writable } from 'svelte/store';
-import { PUBLIC_BACKEND_URL } from '$env/static/public';
+import { API_BASE_URL } from '$lib/api';
 
 export interface Notebook {
     id: string;
@@ -15,7 +15,7 @@ export const loading = writable(false);
 export const fetchNotebooks = async () => {
     loading.set(true);
     try {
-        const res = await fetch(`${PUBLIC_BACKEND_URL}/notebooks`);
+        const res = await fetch(`${API_BASE_URL}/notebooks`);
         if (res.ok) {
             const data = await res.json();
             notebooks.set(data);

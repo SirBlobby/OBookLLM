@@ -3,7 +3,7 @@
 	import { page } from '$app/stores';
 	import { signOut } from '@auth/sveltekit/client';
 	import { onMount } from 'svelte';
-	import { PUBLIC_BACKEND_URL } from '$env/static/public';
+	import { API_BASE_URL } from '$lib/api';
 
 	let { session } = $props();
 

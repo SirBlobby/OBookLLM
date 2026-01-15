@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import { PUBLIC_BACKEND_URL } from '$env/static/public';
+	import { API_BASE_URL } from '$lib/api';
 	import { goto } from '$app/navigation';
 	import { fetchNotebooks } from '$lib/stores/notebooks';
 
@@ -47,7 +47,7 @@
 		if (!title.trim() || title === currentTitle) return;
 		loading = true;
 		try {
-			const res = await fetch(`${PUBLIC_BACKEND_URL}/notebooks/${notebookId}/rename`, {
+			const res = await fetch(`${API_BASE_URL}/notebooks/${notebookId}/rename`, {
 				method: 'PUT',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ title: title.trim() })
@@ -67,7 +67,7 @@
 	async function handleDelete() {
 		loading = true;
 		try {
-			const res = await fetch(`${PUBLIC_BACKEND_URL}/notebooks/${notebookId}`, {
+			const res = await fetch(`${API_BASE_URL}/notebooks/${notebookId}`, {
 				method: 'DELETE'
 			});
 			if (res.ok) {

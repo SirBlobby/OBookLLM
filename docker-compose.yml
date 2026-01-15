@@ -37,8 +37,9 @@ services:
   backend:
     build:
       context: ./backend
-    ports:
-      - "8008:8000"
+    # Uncomment the next 2 lines if you want direct backend access (for debugging)
+    # ports:
+    #   - "8008:8000"
     depends_on:
       - mongo
       - chromadb
@@ -72,10 +73,15 @@ services:
       - backend
     environment:
       - MONGODB_URI=mongodb://mongo:27017
+      # ORIGIN: Must match how users access the frontend (for CORS)
       - ORIGIN=http://localhost:3000
-      - PUBLIC_BACKEND_URL=http://localhost:8008
+      # PUBLIC_BACKEND_URL: Set to /api to use the built-in proxy (recommended)
+      # This routes browser requests through the frontend, so only port 3000 needs to be exposed
+      - PUBLIC_BACKEND_URL=/api
+      # BACKEND_URL: Internal Docker network URL (for the frontend's proxy)
       - BACKEND_URL=http://backend:8000
       - AUTH_SECRET=your-secure-secret-key-change-in-production
+      # AUTH_URL: Must match how users access the frontend
       - AUTH_URL=http://localhost:3000
     networks:
       - notebook_net

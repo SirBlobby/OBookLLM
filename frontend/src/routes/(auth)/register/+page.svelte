@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
 	import { goto } from '$app/navigation';
-	import { PUBLIC_BACKEND_URL } from '$env/static/public';
+	import { API_BASE_URL } from '$lib/api';
 
 	let name = $state('');
 	let email = $state('');
@@ -32,7 +32,7 @@
 		error = '';
 
 		try {
-			const res = await fetch(`${PUBLIC_BACKEND_URL}/auth/register`, {
+			const res = await fetch(`${API_BASE_URL}/auth/register`, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ name, email, password })

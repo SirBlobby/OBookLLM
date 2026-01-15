@@ -2,7 +2,7 @@
 	import Icon from '@iconify/svelte';
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
-	import { PUBLIC_BACKEND_URL } from '$env/static/public';
+	import { API_BASE_URL } from '$lib/api';
 
 	import { goto } from '$app/navigation';
 
@@ -109,7 +109,7 @@
 
 	async function fetchStats() {
 		try {
-			const res = await fetch(`${PUBLIC_BACKEND_URL}/stats`);
+			const res = await fetch(`${API_BASE_URL}/stats`);
 			if (res.ok) statsData = await res.json();
 		} catch (e) {
 			console.error(e);
@@ -225,8 +225,8 @@
 		fetching = true;
 		try {
 			const [settingsRes, modelsRes] = await Promise.all([
-				fetch(`${PUBLIC_BACKEND_URL}/settings`),
-				fetch(`${PUBLIC_BACKEND_URL}/settings/models`)
+				fetch(`${API_BASE_URL}/settings`),
+				fetch(`${API_BASE_URL}/settings/models`)
 			]);
 			if (modelsRes.ok) availableModels = (await modelsRes.json()).models;
 			if (settingsRes.ok) {
@@ -256,7 +256,7 @@
 		error = '';
 		success = '';
 		try {
-			const res = await fetch(`${PUBLIC_BACKEND_URL}/settings`, {
+			const res = await fetch(`${API_BASE_URL}/settings`, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
@@ -285,7 +285,7 @@
 		loading = true;
 		error = '';
 		try {
-			const res = await fetch(`${PUBLIC_BACKEND_URL}/settings/api-keys`, {
+			const res = await fetch(`${API_BASE_URL}/settings/api-keys`, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ provider: newApiKeyProvider, api_key: newApiKeyValue })
@@ -308,7 +308,7 @@
 	async function removeApiKey(provider: string) {
 		if (!confirm(`Remove API key for ${provider}?`)) return;
 		try {
-			await fetch(`${PUBLIC_BACKEND_URL}/settings/api-keys/${provider}`, { method: 'DELETE' });
+			await fetch(`${API_BASE_URL}/settings/api-keys/${provider}`, { method: 'DELETE' });
 			fetchSettings();
 		} catch (e) {
 			console.error(e);
@@ -327,7 +327,7 @@
 		error = '';
 		success = '';
 		try {
-			const res = await fetch(`${PUBLIC_BACKEND_URL}/settings`, {
+			const res = await fetch(`${API_BASE_URL}/settings`, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ chat_model: newModelName.trim(), embedding_model: embeddingModel })
@@ -353,7 +353,7 @@
 		error = '';
 		success = '';
 		try {
-			const res = await fetch(`${PUBLIC_BACKEND_URL}/auth/profile`, {
+			const res = await fetch(`${API_BASE_URL}/auth/profile`, {
 				method: 'PUT',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ email, name })
@@ -380,7 +380,7 @@
 		error = '';
 		success = '';
 		try {
-			const res = await fetch(`${PUBLIC_BACKEND_URL}/auth/password`, {
+			const res = await fetch(`${API_BASE_URL}/auth/password`, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
@@ -404,13 +404,13 @@
 
 	async function fetchApiKeys() {
 		const res = await fetch(
-			`${PUBLIC_BACKEND_URL}/auth/api-keys?email=${encodeURIComponent(email)}`
+			`${API_BASE_URL}/auth/api-keys?email=${encodeURIComponent(email)}`
 		);
 		if (res.ok) apiKeys = (await res.json()).keys;
 	}
 	async function createApiKey() {
 		if (!newKeyName) return;
-		const res = await fetch(`${PUBLIC_BACKEND_URL}/auth/api-keys`, {
+		const res = await fetch(`${API_BASE_URL}/auth/api-keys`, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({ email, name: newKeyName })
@@ -424,19 +424,19 @@
 	}
 	async function deleteApiKey(id: string) {
 		if (!confirm('Delete key?')) return;
-		await fetch(`${PUBLIC_BACKEND_URL}/auth/api-keys/${id}`, { method: 'DELETE' });
+		await fetch(`${API_BASE_URL}/auth/api-keys/${id}`, { method: 'DELETE' });
 		fetchApiKeys();
 	}
 
 	async function fetchWebhooks() {
 		const res = await fetch(
-			`${PUBLIC_BACKEND_URL}/auth/webhooks?email=${encodeURIComponent(email)}`
+			`${API_BASE_URL}/auth/webhooks?email=${encodeURIComponent(email)}`
 		);
 		if (res.ok) webhooks = (await res.json()).webhooks;
 	}
 	async function createWebhook() {
 		if (!newWebhookUrl) return;
-		const res = await fetch(`${PUBLIC_BACKEND_URL}/auth/webhooks`, {
+		const res = await fetch(`${API_BASE_URL}/auth/webhooks`, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({ email, url: newWebhookUrl, events: ['all'] })
@@ -448,7 +448,7 @@
 	}
 	async function deleteWebhook(id: string) {
 		if (!confirm('Delete webhook?')) return;
-		await fetch(`${PUBLIC_BACKEND_URL}/auth/webhooks/${id}`, { method: 'DELETE' });
+		await fetch(`${API_BASE_URL}/auth/webhooks/${id}`, { method: 'DELETE' });
 		fetchWebhooks();
 	}
 </script>

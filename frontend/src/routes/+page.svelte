@@ -4,14 +4,14 @@
 	import NotebookCard from '$lib/components/NotebookCard.svelte';
 	import CreateNotebookPanel from '$lib/components/CreateNotebookPanel.svelte';
 	import AddNotebookCard from '$lib/components/AddNotebookCard.svelte';
-	import { PUBLIC_BACKEND_URL } from '$env/static/public';
+	import { API_BASE_URL } from '$lib/api';
 
 	let isCreating = $state(false);
 	import { notebooks, fetchNotebooks } from '$lib/stores/notebooks';
 
 	async function handleCreateNotebook(title: string) {
 		try {
-			const res = await fetch(`${PUBLIC_BACKEND_URL}/notebooks/create`, {
+			const res = await fetch(`${API_BASE_URL}/notebooks/create`, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ title })

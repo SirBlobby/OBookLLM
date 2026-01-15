@@ -7,7 +7,7 @@
 	import SourceViewer from '$lib/components/SourceViewer.svelte';
 	import PDFViewer from '$lib/components/PDFViewer.svelte';
 	import AudioPlayer from '$lib/components/AudioPlayer.svelte';
-	import { PUBLIC_BACKEND_URL } from '$env/static/public';
+	import { API_BASE_URL } from '$lib/api';
 	import Icon from '@iconify/svelte';
 
 	let notebookId = $derived($page.params.id ?? '');
@@ -45,7 +45,7 @@
 		loading = true;
 
 		try {
-			const response = await fetch(`${PUBLIC_BACKEND_URL}/chat`, {
+			const response = await fetch(`${API_BASE_URL}/chat`, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
@@ -112,7 +112,7 @@
 		for (let i = 0; i < maxAttempts; i++) {
 			await new Promise((r) => setTimeout(r, 2000));
 			try {
-				const res = await fetch(`${PUBLIC_BACKEND_URL}/notebooks/${notebookId}`);
+				const res = await fetch(`${API_BASE_URL}/notebooks/${notebookId}`);
 				if (res.ok) {
 					const data = await res.json();
 					const source = data.sources?.find((s: any) => s.name === filename);
@@ -146,7 +146,7 @@
 		sources = [...sources, { name: file.name, type, status: 'processing' }];
 
 		try {
-			const response = await fetch(`${PUBLIC_BACKEND_URL}/upload`, {
+			const response = await fetch(`${API_BASE_URL}/upload`, {
 				method: 'POST',
 				body: formData
 			});
@@ -176,7 +176,7 @@
 			formData.append('file', file);
 			formData.append('notebook_id', notebookId ?? '');
 
-			const response = await fetch(`${PUBLIC_BACKEND_URL}/upload`, {
+			const response = await fetch(`${API_BASE_URL}/upload`, {
 				method: 'POST',
 				body: formData
 			});
@@ -207,7 +207,7 @@
 		];
 
 		try {
-			const response = await fetch(`${PUBLIC_BACKEND_URL}/upload/url`, {
+			const response = await fetch(`${API_BASE_URL}/upload/url`, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'
@@ -253,7 +253,7 @@
 
 		async function loadNotebook() {
 			try {
-				const res = await fetch(`${PUBLIC_BACKEND_URL}/notebooks/${notebookId}`);
+				const res = await fetch(`${API_BASE_URL}/notebooks/${notebookId}`);
 				if (res.ok) {
 					const data = await res.json();
 					if (data.title) notebookTitle = data.title;
@@ -323,7 +323,7 @@
 
 		messages = [initialMessage];
 
-		const res = await fetch(`${PUBLIC_BACKEND_URL}/notebooks/${notebookId}/messages`, {
+		const res = await fetch(`${API_BASE_URL}/notebooks/${notebookId}/messages`, {
 			method: 'PUT',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify([initialMessage])
@@ -342,7 +342,7 @@
 
 		try {
 			const res = await fetch(
-				`${PUBLIC_BACKEND_URL}/notebooks/${notebookId}/sources/${encodeURIComponent(sourceName)}`,
+				`${API_BASE_URL}/notebooks/${notebookId}/sources/${encodeURIComponent(sourceName)}`,
 				{
 					method: 'DELETE'
 				}
@@ -452,7 +452,7 @@
 				>
 					<SourceViewer
 						source={viewingSource}
-						rawUrl={`${PUBLIC_BACKEND_URL}/notebooks/${notebookId}/sources/${encodeURIComponent(viewingSource.name)}/raw`}
+						rawUrl={`${API_BASE_URL}/notebooks/${notebookId}/sources/${encodeURIComponent(viewingSource.name)}/raw`}
 						currentTime={audioCurrentTime}
 						onTimeUpdate={(time) => (audioCurrentTime = time)}
 					/>
