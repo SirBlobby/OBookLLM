@@ -1,0 +1,145 @@
+@import 'tailwindcss';
+
+@theme {
+  /* Dark mode colors (only) */
+  --color-primary: #818cf8;
+  --color-secondary: #e879f9;
+  --color-accent: #2dd4bf;
+  --color-background: #171717;
+  --color-background-light: #262626;
+  --color-text: #f5f5f5;
+  --color-text-muted: #a3a3a3;
+  --color-border: #404040;
+  --color-surface: #262626;
+  --color-error: #ef4444;
+  --color-success: #2dd4bf;
+  --color-warning: #fbbf24;
+  --color-info: #818cf8;
+}
+
+:root {
+  --primary: #818cf8;
+  --secondary: #e879f9;
+  --accent: #2dd4bf;
+  --background: #171717;
+  --background-light: #262626;
+  --text: #f5f5f5;
+  --text-muted: #a3a3a3;
+  --border: #404040;
+  --surface: #262626;
+  --error: #ef4444;
+  --success: #2dd4bf;
+  --warning: #fbbf24;
+  --info: #818cf8;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--text);
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+/* Utility classes using CSS variables */
+.bg-primary {
+  background-color: var(--primary);
+}
+
+.bg-secondary {
+  background-color: var(--secondary);
+}
+
+.bg-accent {
+  background-color: var(--accent);
+}
+
+.bg-background {
+  background-color: var(--background);
+}
+
+.bg-background-light {
+  background-color: var(--background-light);
+}
+
+.bg-surface {
+  background-color: var(--surface);
+}
+
+.bg-error {
+  background-color: var(--error);
+}
+
+.bg-success {
+  background-color: var(--success);
+}
+
+.bg-warning {
+  background-color: var(--warning);
+}
+
+.text-primary {
+  color: var(--primary);
+}
+
+.text-secondary {
+  color: var(--secondary);
+}
+
+.text-accent {
+  color: var(--accent);
+}
+
+.text-default {
+  color: var(--text);
+}
+
+.text-muted {
+  color: var(--text-muted);
+}
+
+.text-error {
+  color: var(--error);
+}
+
+.text-success {
+  color: var(--success);
+}
+
+.text-warning {
+  color: var(--warning);
+}
+
+.border-default {
+  border-color: var(--border);
+}
+
+.border-primary {
+  border-color: var(--primary);
+}
+
+.border-secondary {
+  border-color: var(--secondary);
+}
+
+.hover\:bg-primary:hover {
+  background-color: var(--primary);
+}
+
+.hover\:bg-secondary:hover {
+  background-color: var(--secondary);
+}
+
+.hover\:text-primary:hover {
+  color: var(--primary);
+}
+
+.ring-primary {
+  --tw-ring-color: var(--primary);
+}
+
+.focus\:ring-primary:focus {
+  --tw-ring-color: var(--primary);
+}
+
+.focus\:border-primary:focus {
+  border-color: var(--primary);
+}

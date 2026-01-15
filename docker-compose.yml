@@ -1,0 +1,94 @@
+version: '3.8'
+
+services:
+  mongo:
+    image: mongo:latest
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - notebook_net
+    restart: unless-stopped
+
+  chromadb:
+    image: chromadb/chroma
+    ports:
+      - "8000:8000"
+    volumes:
+      - chroma_data:/chroma/chroma
+    networks:
+      - notebook_net
+    restart: unless-stopped
+
+  ollama:
+    image: ollama/ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [ gpu ]
+    networks:
+      - notebook_net
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+    ports:
+      - "8008:8000"
+    depends_on:
+      - mongo
+      - chromadb
+      - ollama
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+      - MONGODB_URI=mongodb://mongo:27017
+      - CHROMA_HOST=chromadb
+      - CHROMA_PORT=8000
+    volumes:
+      - huggingface_cache:/root/.cache/huggingface
+      - whisper_cache:/root/.cache/whisper
+      - uploads_data:/app/uploads
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [ gpu ]
+    networks:
+      - notebook_net
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    environment:
+      - MONGODB_URI=mongodb://mongo:27017
+      - ORIGIN=http://localhost:3000
+      - PUBLIC_BACKEND_URL=http://localhost:8008
+    networks:
+      - notebook_net
+    restart: unless-stopped
+
+volumes:
+  mongo_data:
+  chroma_data:
+  ollama_data:
+  huggingface_cache:
+  whisper_cache:
+  uploads_data:
+
+
+networks:
+  notebook_net:
+    driver: bridge

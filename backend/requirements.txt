@@ -1,0 +1,41 @@
+# Core
+fastapi
+uvicorn
+motor
+python-multipart
+python-dotenv
+tqdm
+httpx
+
+# Database
+chromadb
+
+# LLM Providers
+ollama
+google-genai
+
+# LangChain
+langchain
+langchain-core
+langchain-community
+langchain-ollama
+langchain-openai
+langchain-anthropic
+langchain-google-genai
+langchain-chroma
+
+# Document Processing
+pypdf
+pdf2image
+pytesseract
+python-docx
+pandas
+openpyxl
+pyyaml
+beautifulsoup4
+Pillow
+
+# Audio Transcription
+torch
+faster-whisper
+yt-dlp
