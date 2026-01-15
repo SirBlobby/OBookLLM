@@ -13,9 +13,12 @@ WORKDIR /app
 COPY --from=builder /app/build build/
 COPY --from=builder /app/package.json .
 COPY --from=builder /app/node_modules node_modules/
+# Copy the custom server
+COPY --from=builder /app/server server/
 
 EXPOSE 3000
 ENV NODE_ENV=production
 ENV ORIGIN=http://localhost:3000
 
-CMD [ "bun", "build/index.js" ]
+# Run the custom server
+CMD [ "bun", "server/server.ts" ]

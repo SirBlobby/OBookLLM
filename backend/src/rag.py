@@ -8,7 +8,6 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
-# Load .env from the backend root directory (parent of src/)
 env_path = Path(__file__).parent.parent / ".env"
 load_dotenv(dotenv_path=env_path)
 
@@ -19,29 +18,29 @@ from tqdm import tqdm
 from faster_whisper import WhisperModel
 from typing import List, Dict, Any, Generator, Optional, Tuple, AsyncGenerator
 
-# Import provider system
+
 from .providers.registry import get_registry, ProviderRegistry
 from .chains.rag_chain import RAGChain, create_rag_chain
 
-# Re-export get_registry for use by main.py
+
 __all__ = ['get_registry', 'get_rag_chain', 'process_document', 'transcribe_audio', 
            'stream_chat_response', 'get_available_providers', 'set_chat_provider',
            'set_embedding_provider', 'list_provider_models', 'delete_source_documents']
 
-# Configuration
+
 CHROMA_HOST = os.getenv("CHROMA_HOST", "chromadb")
 CHROMA_PORT = int(os.getenv("CHROMA_PORT", 8000))
 
-# Initialize ChromaDB client (legacy support)
+
 chroma_client = chromadb.HttpClient(host=CHROMA_HOST, port=CHROMA_PORT)
 collection = chroma_client.get_or_create_collection(name="notebook_docs")
 
-# Initialize Faster Whisper with GPU if available
+
 device = "cuda" if torch.cuda.is_available() else "cpu"
 compute_type = "float16" if device == "cuda" else "int8"
 whisper_model = None
 
-# Global RAG chain instance
+
 _rag_chain: Optional[RAGChain] = None
 
 
@@ -91,7 +90,6 @@ def get_embeddings(text: str) -> List[float]:
 
 
 def transcribe_audio(file_path: str) -> str:
-    """Transcribe audio file using Faster Whisper."""
     model = get_whisper_model()
     
     # Get audio duration for progress bar
@@ -136,7 +134,7 @@ def process_document(notebook_id: str, file_path: str, content: str, source_type
     Chunk and store document in ChromaDB.
     Uses the new RAG chain for LangChain-based processing.
     """
-    # Use RAG chain for document processing
+
     try:
         rag_chain = get_rag_chain()
         num_chunks = rag_chain.add_documents(
@@ -180,9 +178,7 @@ def _legacy_process_document(notebook_id: str, file_path: str, content: str, sou
 
 
 def delete_source_documents(notebook_id: str, source_name: str):
-    """Delete all documents associated with a source."""
     try:
-        # Try RAG chain first
         rag_chain = get_rag_chain()
         rag_chain.delete_source(notebook_id, source_name)
     except Exception as e:
@@ -314,7 +310,7 @@ async def stream_chat_response(
         yield f"Error generating response: {str(e)}"
 
 
-# --- Provider Configuration Functions ---
+
 
 def configure_providers(settings: dict):
     """Configure the provider registry from settings."""

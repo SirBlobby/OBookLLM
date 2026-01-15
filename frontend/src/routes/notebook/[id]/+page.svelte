@@ -69,13 +69,11 @@
 				const chunk = decoder.decode(value);
 				assistantMsg += chunk;
 
-				// Initialize message on first chunk
 				if (msgIndex === -1) {
 					messages = [...messages, { role: 'assistant', content: '', citations: {} }];
 					msgIndex = messages.length - 1;
 				}
 
-				// Strip citation data while streaming
 				const delim = '\n\n---CITATIONS---\n';
 				if (assistantMsg.includes(delim)) {
 					messages[msgIndex].content = assistantMsg.split(delim)[0];
@@ -84,7 +82,6 @@
 				}
 			}
 
-			// Parse citations after stream ends
 			const delim = '\n\n---CITATIONS---\n';
 			if (assistantMsg.includes(delim)) {
 				const [content, citationJson] = assistantMsg.split(delim);
@@ -111,7 +108,7 @@
 	}
 
 	async function pollForCompletion(filename: string) {
-		const maxAttempts = 60; // 2 minutes (2s * 60)
+		const maxAttempts = 60;
 		for (let i = 0; i < maxAttempts; i++) {
 			await new Promise((r) => setTimeout(r, 2000));
 			try {
@@ -123,12 +120,10 @@
 					if (source) {
 						const idx = sources.findIndex((s) => s.name === filename);
 						if (idx !== -1) {
-							// If status changed to ready or error, update and stop polling
 							if (source.status === 'ready' || source.status === 'error') {
 								sources[idx] = source;
 								sources = [...sources]; // Trigger reactivity
 
-								// Auto-select ready sources
 								if (source.status === 'ready' && !selectedSources.includes(source.name)) {
 									selectedSources = [...selectedSources, source.name];
 								}
@@ -148,7 +143,6 @@
 		formData.append('file', file);
 		formData.append('notebook_id', notebookId ?? '');
 
-		// Add to sources list with processing status
 		sources = [...sources, { name: file.name, type, status: 'processing' }];
 
 		try {
@@ -158,29 +152,23 @@
 			});
 
 			if (response.ok) {
-				// Start polling for completion (status: 'ready' and content)
 				pollForCompletion(file.name);
 			} else {
-				// Remove failed source
 				sources = sources.filter((s) => !(s.name === file.name && s.status === 'processing'));
 			}
 		} catch (e) {
 			console.error('Upload failed', e);
-			// Remove failed source
 			sources = sources.filter((s) => !(s.name === file.name && s.status === 'processing'));
 		}
 	}
 
 	async function handleAddText(text: string) {
-		// Create a text source with a timestamp name
 		const timestamp = new Date().toLocaleTimeString();
 		const sourceName = `Text Note (${timestamp}).txt`;
 
-		// Add to sources list
 		sources = [...sources, { name: sourceName, type: 'text', status: 'processing' }];
 
 		try {
-			// Create a blob from the text and upload it
 			const blob = new Blob([text], { type: 'text/plain' });
 			const file = new File([blob], sourceName, { type: 'text/plain' });
 
@@ -207,8 +195,7 @@
 	async function handleAddUrl(url: string) {
 		if (!url.trim()) return;
 
-		// Add optimistic source
-		const sourceName = url; // Use URL as name for now
+		const sourceName = url;
 
 		sources = [
 			...sources,
@@ -242,7 +229,6 @@
 		}
 	}
 
-	// Legacy handler for backward compatibility
 	function handleLegacyUpload(e: Event) {
 		const target = e.target as HTMLInputElement;
 		if (!target.files?.length) return;
@@ -252,7 +238,6 @@
 	}
 
 	$effect(() => {
-		// Reset and load when notebookId changes
 		if (!notebookId) return;
 
 		messages = [
@@ -289,7 +274,6 @@
 								const parts = msg.content.split('---CITATIONS---');
 								if (parts.length > 1) {
 									try {
-										// The delimiter might have surrounding newlines, so we clean up the content part
 										const content = parts[0].trim();
 										const jsonStr = parts[1].trim();
 										const citations = JSON.parse(jsonStr);
@@ -337,10 +321,8 @@
 				'Hello! Upload a document to get started or ask me anything about your existing sources.'
 		};
 
-		// Update local state
 		messages = [initialMessage];
 
-		// Update backend
 		const res = await fetch(`${PUBLIC_BACKEND_URL}/notebooks/${notebookId}/messages`, {
 			method: 'PUT',
 			headers: { 'Content-Type': 'application/json' },
@@ -391,7 +373,6 @@
 				type: type
 			};
 		} else {
-			// If content is missing (undefined), it's a legacy source or didn't update yet
 			viewingSource = {
 				name: source.name,
 				content:

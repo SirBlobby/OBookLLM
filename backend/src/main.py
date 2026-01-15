@@ -2,7 +2,6 @@ from dotenv import load_dotenv
 from pathlib import Path
 from contextlib import asynccontextmanager
 
-# Load .env from the backend root directory (parent of src/)
 env_path = Path(__file__).parent.parent / ".env"
 load_dotenv(dotenv_path=env_path)
 
@@ -18,10 +17,10 @@ import uuid
 from motor.motor_asyncio import AsyncIOMotorClient
 from src import rag
 
-# Config
+
 MONGODB_URI = os.getenv("MONGODB_URI", "mongodb://localhost:27017")
 
-# Database
+
 client = AsyncIOMotorClient(MONGODB_URI)
 db = client.notebook_llm
 
@@ -34,7 +33,7 @@ async def lifespan(app: FastAPI):
         if settings:
             registry = rag.get_registry()
             
-            # Load API keys
+
             api_keys = settings.get("api_keys", {})
             for provider_name, api_key in api_keys.items():
                 if api_key and provider_name in ["openai", "anthropic", "gemini"]:
@@ -45,14 +44,14 @@ async def lifespan(app: FastAPI):
                     except Exception as e:
                         print(f"Error loading API key for {provider_name}: {e}")
             
-            # Load Ollama URL
+
             ollama_url = settings.get("ollama_url")
             if ollama_url:
                 ollama_provider = registry.get_provider("ollama")
                 ollama_provider.base_url = ollama_url
                 print(f"Loaded Ollama URL from database: {ollama_url}")
             
-            # Load provider selections
+
             chat_provider = settings.get("chat_provider", "ollama")
             chat_model = settings.get("chat_model")
             registry.set_chat_provider(chat_provider, chat_model)
@@ -70,7 +69,7 @@ async def lifespan(app: FastAPI):
     
     yield  # App runs here
     
-    # Shutdown
+
     print("Shutting down...")
 
 
@@ -95,16 +94,16 @@ async def process_file_task(notebook_id: str, file_path: str, filename: str):
     try:
         from src.loaders import load_document, get_file_type
         
-        # Use universal document loader
+
         file_type = get_file_type(file_path)
         print(f"Processing file: {filename} (type: {file_type})")
         
-        # Handle audio files separately (require transcription)
+
         if file_type == "audio":
             content = rag.transcribe_audio(file_path)
             source_type = "audio"
         else:
-            # Use universal loader for all other types
+
             result = load_document(file_path)
             
             if not result["success"]:
@@ -113,7 +112,7 @@ async def process_file_task(notebook_id: str, file_path: str, filename: str):
             content = result["text"]
             source_type = result["file_type"]
             
-            # For PDFs, try OCR if no text extracted
+
             if source_type == "pdf" and (not content or len(content) < 50):
                 print("PDF has no text, attempting OCR...")
                 try:
@@ -137,10 +136,10 @@ async def process_file_task(notebook_id: str, file_path: str, filename: str):
         
         print(f"Extracted {len(content)} characters from {filename}")
 
-        # Index in vector DB
+
         rag.process_document(notebook_id, file_path, content, source_type, filename)
         
-        # Update Status
+
         from bson import ObjectId
         print(f"DEBUG: Processing complete for {filename}. Content length: {len(content)}")
         
@@ -179,7 +178,6 @@ async def upload_file(
     file: UploadFile = File(...),
     notebook_id: str = Form(...)
 ):
-    # Save temp file
     # Save file to persistent storage
     upload_dir = os.path.join(os.getcwd(), "uploads")
     os.makedirs(upload_dir, exist_ok=True)
@@ -188,8 +186,7 @@ async def upload_file(
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
         
-    # Determine type
-    # Determine type
+
     from src.loaders import get_file_type
     detected_type = get_file_type(file.filename)
     source_type = detected_type if detected_type else "text"
@@ -201,7 +198,7 @@ async def upload_file(
         "file_path": file_path
     }
 
-    # Add source to DB
+
     from bson import ObjectId
     try:
         await db.notebooks.update_one(
@@ -236,14 +233,14 @@ async def process_url_task(notebook_id: str, url: str):
         
         print(f"Processing URL: {url}")
         
-        # Check for YouTube
+
         is_youtube = any(x in url for x in ["youtube.com", "youtu.be"])
         file_path = url # Default for web
         
         if is_youtube:
             print(f"Detected YouTube URL, downloading audio...")
             upload_dir = os.path.join(os.getcwd(), "uploads")
-            # This is blocking, but simpler to implement inline
+
             file_path = download_youtube_audio(url, upload_dir)
             
             print(f"Transcribing YouTube audio: {file_path}")
@@ -251,7 +248,7 @@ async def process_url_task(notebook_id: str, url: str):
             source_type = "audio"
             source_name = url
         else:
-            # Load content from URL
+
             content = load_url(url)
             source_type = "web"
             source_name = url
@@ -261,10 +258,10 @@ async def process_url_task(notebook_id: str, url: str):
             
         print(f"Extracted {len(content)} characters from {url}")
         
-        # Index in vector DB
+
         rag.process_document(notebook_id, file_path, content, source_type, source_name)
         
-        # Update Status
+
         from bson import ObjectId
         print(f"Processing complete for {url}")
         
@@ -320,7 +317,7 @@ async def upload_url(request: UrlUploadRequest, background_tasks: BackgroundTask
         "file_path": url # URL serves as path
     }
 
-    # Add source to DB
+
     from bson import ObjectId
     try:
         await db.notebooks.update_one(
@@ -406,7 +403,7 @@ async def get_source_file(notebook_id: str, raw_path: str):
 
 @app.post("/chat")
 async def chat(request: ChatRequest):
-    # Save user message first
+
     user_msg = request.messages[-1]
     if user_msg["role"] == "user":
         from bson import ObjectId
@@ -422,7 +419,7 @@ async def chat(request: ChatRequest):
             )
 
     async def stream_and_save():
-        # Attempt to load full content for selected sources (Full Context Mode)
+
         full_source_content = []
         if request.selected_sources:
             try:
@@ -436,8 +433,6 @@ async def chat(request: ChatRequest):
                 if nb and "sources" in nb:
                     total_chars = 0
                     temp_content = []
-                    # Limit ensuring we don't blow up memory/context blindly. 500k chars ~ 125k tokens.
-                    MAX_FULL_CONTEXT = 500000 
                     
                     for s in nb["sources"]:
                         if s["name"] in request.selected_sources:
@@ -452,7 +447,7 @@ async def chat(request: ChatRequest):
                 print(f"Error loading full context: {e}")
 
         full_response = ""
-        # Iterate asynchronously over the async generator
+
         async for chunk in rag.stream_chat_response(
             request.notebook_id, 
             request.messages, 
@@ -462,7 +457,7 @@ async def chat(request: ChatRequest):
             full_response += chunk
             yield chunk
             
-        # Save assistant message after streaming is done
+
         assistant_msg = {"role": "assistant", "content": full_response}
         from bson import ObjectId
         try:
@@ -484,7 +479,7 @@ async def chat(request: ChatRequest):
 @app.get("/notebooks")
 async def list_notebooks():
     notebooks = await db.notebooks.find().to_list(100)
-    # Convert ObjectId to string
+
     for n in notebooks:
         n["id"] = str(n["_id"])
         del n["_id"]
@@ -611,7 +606,7 @@ async def delete_source(notebook_id: str, source_name: str):
     """Remove a source from the notebook."""
     from bson import ObjectId
     try:
-        # Pull from sources list
+
         await db.notebooks.update_one(
             {"_id": ObjectId(notebook_id)},
             {
@@ -628,7 +623,7 @@ async def delete_source(notebook_id: str, source_name: str):
             }
         )
     
-    # Remove from RAG
+
     rag.delete_source_documents(notebook_id, source_name)
     
     return {"status": "ok"}
@@ -681,7 +676,7 @@ class RegisterRequest(BaseModel):
 async def register_user(request: RegisterRequest):
     import hashlib
     
-    # Check if user already exists
+
     existing_user = await db.users.find_one({"email": request.email})
     if existing_user:
         raise HTTPException(status_code=400, detail="Email already registered")

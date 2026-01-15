@@ -7,26 +7,21 @@ import os
 from pathlib import Path
 from typing import Optional, Dict, Any
 
-# File type mappings
 SUPPORTED_EXTENSIONS = {
-    # Documents
     ".txt": "text",
     ".md": "markdown",
     ".pdf": "pdf",
     ".docx": "docx",
-    ".doc": "docx",  # Legacy Word format (requires conversion or text extraction)
-    # Structured data
+    ".doc": "docx",
     ".json": "json",
     ".csv": "csv",
     ".xlsx": "excel",
-    ".xls": "excel",  # Legacy Excel format
+    ".xls": "excel",
     ".yaml": "yaml",
     ".yml": "yaml",
     ".xml": "xml",
-    # Web
     ".html": "html",
     ".htm": "html",
-    # Code
     ".py": "code",
     ".js": "code",
     ".ts": "code",
@@ -55,7 +50,6 @@ SUPPORTED_EXTENSIONS = {
     ".lua": "code",
     ".perl": "code",
     ".pl": "code",
-    # Images (OCR)
     ".png": "image",
     ".jpg": "image",
     ".jpeg": "image",
@@ -63,7 +57,6 @@ SUPPORTED_EXTENSIONS = {
     ".bmp": "image",
     ".tiff": "image",
     ".webp": "image",
-    # Audio
     ".mp3": "audio",
     ".wav": "audio",
     ".m4a": "audio",
@@ -107,14 +100,12 @@ def load_pdf(file_path: str) -> str:
 
     extracted_text = "\n\n".join(text_parts)
     
-    # If text is minimal (e.g. scanned), try OCR
     if len(extracted_text.strip()) < 100:
         print(f"PDF {os.path.basename(file_path)} appears scanned (text len < 100). Attempting OCR...")
         try:
             from pdf2image import convert_from_path
             import pytesseract
             
-            # Check availability
             try:
                 pytesseract.get_tesseract_version()
             except:
@@ -155,7 +146,6 @@ def load_json(file_path: str) -> str:
     with open(file_path, "r", encoding="utf-8") as f:
         data = json.load(f)
     
-    # Convert to readable text representation
     return json.dumps(data, indent=2, ensure_ascii=False)
 
 
@@ -165,7 +155,6 @@ def load_csv(file_path: str) -> str:
         import pandas as pd
         df = pd.read_csv(file_path)
         
-        # Convert to markdown table format for better readability
         lines = []
         lines.append("| " + " | ".join(df.columns) + " |")
         lines.append("| " + " | ".join(["---"] * len(df.columns)) + " |")
@@ -183,7 +172,6 @@ def load_excel(file_path: str) -> str:
     try:
         import pandas as pd
         
-        # Read all sheets
         xl = pd.ExcelFile(file_path)
         all_text = []
         
@@ -191,7 +179,6 @@ def load_excel(file_path: str) -> str:
             df = pd.read_excel(xl, sheet_name=sheet_name)
             all_text.append(f"## Sheet: {sheet_name}\n")
             
-            # Convert to markdown table
             lines = []
             lines.append("| " + " | ".join(str(c) for c in df.columns) + " |")
             lines.append("| " + " | ".join(["---"] * len(df.columns)) + " |")
@@ -224,7 +211,6 @@ def load_html(file_path: str) -> str:
         with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
             soup = BeautifulSoup(f, 'html.parser')
         
-        # Remove script and style elements
         for script in soup(["script", "style"]):
             script.decompose()
         
@@ -240,13 +226,11 @@ def load_url(url: str) -> str:
         import httpx
         from bs4 import BeautifulSoup
         
-        # Handle GitHub URLs locally to get raw content
         if "github.com" in url and "/blob/" in url:
             # Convert https://github.com/user/repo/blob/branch/file.py
             # to https://raw.githubusercontent.com/user/repo/branch/file.py
             url = url.replace("github.com", "raw.githubusercontent.com").replace("/blob/", "/")
         
-        # Add user-agent to avoid 403s
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
         }
@@ -255,13 +239,11 @@ def load_url(url: str) -> str:
             response = client.get(url, headers=headers)
             response.raise_for_status()
             
-        # If it's a raw code file (from GitHub or otherwise), return text directly
         if "raw.githubusercontent.com" in url or not response.headers.get("content-type", "").startswith("text/html"):
             return response.text
             
         soup = BeautifulSoup(response.text, 'html.parser')
         
-        # Remove script and style elements
         for script in soup(["script", "style", "nav", "footer", "iframe"]):
             script.decompose()
             
@@ -300,7 +282,6 @@ def load_xml(file_path: str) -> str:
         
         return "\n".join(extract_text(root))
     except Exception as e:
-        # Fallback to raw text if parsing fails
         return load_text(file_path)
 
 
@@ -341,7 +322,6 @@ def load_code(file_path: str) -> str:
     language = language_map.get(ext, "code")
     content = load_text(file_path)
     
-    # Wrap in code block for clarity
     return f"```{language}\n{content}\n```"
 
 
@@ -350,7 +330,6 @@ def load_image_ocr(file_path: str) -> str:
     try:
         from PIL import Image
         
-        # First check if tesseract is available
         try:
             import pytesseract
             # Test if tesseract binary is accessible
@@ -409,7 +388,6 @@ def load_document(file_path: str) -> Dict[str, Any]:
         "image": load_image_ocr,
     }
     
-    # Audio is handled separately by the transcription pipeline
     if file_type == "audio":
         return {
             "text": "",
@@ -485,10 +463,8 @@ def download_youtube_audio(url: str, output_dir: str = "uploads") -> str:
         import uuid
         import os
         
-        # Ensure upload dir exists
         os.makedirs(output_dir, exist_ok=True)
         
-        # Generate unique ID
         file_id = str(uuid.uuid4())
         # Template for yt-dlp (it appends extension)
         output_template = os.path.join(output_dir, f"{file_id}.%(ext)s")

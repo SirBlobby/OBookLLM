@@ -86,7 +86,6 @@
 			<p class="text-sm">{error}</p>
 		</div>
 	{:else}
-		<!-- Hidden audio element -->
 		<audio
 			bind:this={audioElement}
 			src={url}
@@ -98,9 +97,7 @@
 			onended={() => (isPlaying = false)}
 		></audio>
 
-		<!-- Compact layout -->
 		<div class="flex items-center gap-3">
-			<!-- Play button -->
 			<button
 				onclick={togglePlay}
 				disabled={loading}
@@ -127,12 +124,10 @@
 				{/if}
 			</button>
 
-			<!-- Time display -->
 			<span class="text-xs tabular-nums shrink-0" style="color: var(--text-muted);">
 				{formatTime(currentTime)}
 			</span>
 
-			<!-- Progress section -->
 			<div class="flex-1 min-w-0">
 				<input
 					type="range"
@@ -144,12 +139,10 @@
 				/>
 			</div>
 
-			<!-- Duration -->
 			<span class="text-xs tabular-nums shrink-0" style="color: var(--text-muted);">
 				{formatTime(duration)}
 			</span>
 
-			<!-- Skip buttons -->
 			<button
 				onclick={skipBack}
 				class="p-1 rounded hover:bg-white/10 transition-colors"
@@ -171,7 +164,6 @@
 				</svg>
 			</button>
 
-			<!-- Volume -->
 			<div class="flex items-center gap-1 shrink-0">
 				<svg
 					class="w-3.5 h-3.5"

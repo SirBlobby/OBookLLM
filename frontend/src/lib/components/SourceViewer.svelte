@@ -19,10 +19,8 @@
 
 	let { source, rawUrl, currentTime = 0, onTimeUpdate }: Props = $props();
 
-	// Get file extension from name
 	let ext = $derived(source.name.toLowerCase().split('.').pop() || '');
 
-	// Map source types to display configurations
 	const typeConfig: Record<string, { icon: string; color: string; title: string }> = {
 		pdf: { icon: 'mdi:file-pdf-box', color: '#ef4444', title: 'PDF Document' },
 		audio: { icon: 'mdi:microphone', color: '#8b5cf6', title: 'Audio' },
@@ -42,9 +40,7 @@
 
 	let config = $derived(typeConfig[source.type] || typeConfig.text);
 
-	// Is this a structured data type that benefits from markdown table rendering?
 	let isMarkdownData = $derived(['csv', 'excel', 'markdown'].includes(source.type));
-	// Is this code/data that should be monospaced?
 	let isCodeData = $derived(['json', 'yaml', 'xml', 'code', 'html'].includes(source.type));
 
 	let renderedContent = $state('');
@@ -60,12 +56,10 @@
 		}
 	});
 
-	// Check if content contains markdown code blocks
 	function hasCodeBlocks(content: string): boolean {
 		return /```[\s\S]*?```/.test(content);
 	}
 
-	// Audio Transcript Helpers
 	function parseTimestamp(ts: string): number {
 		const parts = ts.split(':').map(Number);
 		if (parts.length === 2) return parts[0] * 60 + parts[1];
@@ -106,20 +100,18 @@
 	}
 
 	let formattedTranscript = $derived(
-		source.type === 'audio' 
-			? formatTranscriptWithHighlight(source.content, currentTime) 
+		source.type === 'audio'
+			? formatTranscriptWithHighlight(source.content, currentTime)
 			: source.content
 	);
 </script>
 
 <div class="source-viewer">
 	{#if source.type === 'pdf' && rawUrl}
-		<!-- PDF Viewer -->
 		<div class="h-full w-full min-h-[60vh]">
 			<PDFViewer url={rawUrl} />
 		</div>
 	{:else if source.type === 'audio' && rawUrl}
-		<!-- Audio Player with Transcript -->
 		<div class="flex flex-col gap-4">
 			<AudioPlayer url={rawUrl} title={source.name} onTimeUpdate={(time) => onTimeUpdate?.(time)} />
 			{#if source.content}
@@ -137,7 +129,6 @@
 			{/if}
 		</div>
 	{:else if source.type === 'image' && rawUrl}
-		<!-- Image Viewer -->
 		<div class="flex flex-col gap-4">
 			<div class="rounded-lg overflow-hidden border" style="border-color: var(--border);">
 				<img src={rawUrl} alt={source.name} class="max-w-full h-auto" />
@@ -161,7 +152,6 @@
 			{/if}
 		</div>
 	{:else if isCodeData}
-		<!-- Code/Data Viewer with monospace font -->
 		<div class="rounded-lg overflow-hidden border" style="border-color: var(--border);">
 			<div
 				class="flex items-center justify-between px-3 py-2"
@@ -187,7 +177,6 @@
 				></pre>
 		</div>
 	{:else if isMarkdownData}
-		<!-- Markdown / Table Viewer -->
 		<div
 			class="markdown-preview prose prose-sm max-w-none dark:prose-invert"
 			style="color: var(--text);"
@@ -195,7 +184,6 @@
 			{@html renderedContent}
 		</div>
 	{:else}
-		<!-- Default Text Viewer -->
 		<div class="whitespace-pre-wrap text-sm" style="color: var(--text);">
 			{source.content}
 		</div>
@@ -203,7 +191,6 @@
 </div>
 
 <style>
-	/* Markdown Styles */
 	.source-viewer :global(.markdown-preview) {
 		line-height: 1.6;
 	}
@@ -231,7 +218,6 @@
 		background-color: rgba(0, 0, 0, 0.02);
 	}
 
-	/* Dark mode stripe fix */
 	@media (prefers-color-scheme: dark) {
 		.source-viewer :global(.markdown-preview tr:nth-child(even)) {
 			background-color: rgba(255, 255, 255, 0.02);

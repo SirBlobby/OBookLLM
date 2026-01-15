@@ -5,25 +5,22 @@
 	import { PUBLIC_BACKEND_URL } from '$env/static/public';
 
 	import { goto } from '$app/navigation';
-	// Removed static import of Chart.js to avoid SSR issues
 
-	// --- Tabs ---
 	type Tab = 'profile' | 'security' | 'developer' | 'models' | 'stats';
-	// Derive active tab directly from URL, default to 'profile'
+
 	let activeTab = $derived<Tab>(($page.url.searchParams.get('tab') as Tab) || 'profile');
 
-	// --- Session ---
 	let session = $derived($page.data.session);
 	let name = $state('');
 	let email = $state('');
 
-	// --- Status ---
-	let loading = $state(false); // Global loading state (for save actions)
-	let fetching = $state(true); // Initial fetch state
+	let loading = $state(false);
+
+	let fetching = $state(true);
+
 	let error = $state('');
 	let success = $state('');
 
-	// --- AI Models State ---
 	interface OllamaModel {
 		name: string;
 		size: number;
@@ -54,34 +51,29 @@
 	let newModelName = $state('');
 	let apiKeysConfigured = $state<Record<string, boolean>>({});
 
-	// API Key input state
 	let newApiKeyProvider = $state('');
 	let newApiKeyValue = $state('');
 
-	// --- Security State ---
 	let currentPassword = $state('');
 	let newPassword = $state('');
 	let confirmPassword = $state('');
 
-	// --- Developer State ---
 	let apiKeys = $state<any[]>([]);
 	let webhooks = $state<any[]>([]);
 	let newKeyName = $state('');
 	let newWebhookUrl = $state('');
 	let createdApiKey = $state('');
 
-	// --- Stats State ---
 	let statsData = $state<any>(null);
 	let canvas1 = $state<HTMLCanvasElement>();
 	let canvas2 = $state<HTMLCanvasElement>();
 	let canvas3 = $state<HTMLCanvasElement>();
-	let Chart: any; // Dynamic import
+	let Chart: any;
+
 	let chart1: any = null;
 	let chart2: any = null;
 	let chart3: any = null;
 
-	// --- Initialization ---
-	// React to tab changes for data fetching
 	$effect(() => {
 		if (activeTab === 'developer') {
 			fetchApiKeys();
@@ -92,7 +84,6 @@
 		}
 	});
 
-	// React to canvas mounting for Chart
 	$effect(() => {
 		if (activeTab === 'stats' && canvas1 && statsData?.history && Chart) {
 			initCharts();
@@ -105,7 +96,7 @@
 			name = session.user.name || '';
 			email = session.user.email || '';
 		}
-		// Dynamically load Chart.js
+
 		const mod = await import('chart.js/auto');
 		Chart = mod.default;
 	});
@@ -136,7 +127,6 @@
 		return new Chart(ctx, {
 			type: 'line',
 			data: {
-				// Create copies of the arrays to avoid Svelte 5 proxy conflicts
 				labels: [...labels],
 				datasets: [
 					{
@@ -178,7 +168,6 @@
 		if (chart2) chart2.destroy();
 		if (chart3) chart3.destroy();
 
-		// Format labels: "Start" -> "", and dates -> "Jan 15"
 		const formattedLabels = statsData.history.labels.map((l: string) => {
 			if (l === 'Start') return '';
 			const d = new Date(l);
@@ -213,7 +202,6 @@
 			);
 	}
 
-	// --- AI Settings Functions ---
 	function findMatchingModel(modelName: string): OllamaModel | undefined {
 		let match = availableModels.find((m) => m.name === modelName);
 		if (match) return match;
@@ -243,11 +231,10 @@
 			if (modelsRes.ok) availableModels = (await modelsRes.json()).models;
 			if (settingsRes.ok) {
 				const s = await settingsRes.json();
-				// Set provider info
+
 				if (s.providers) providers = s.providers;
 				if (s.api_keys_configured) apiKeysConfigured = s.api_keys_configured;
 
-				// Set current selections
 				chatProvider = s.chat_provider || 'ollama';
 				embeddingProvider = s.embedding_provider || 'ollama';
 				ollamaUrl = s.ollama_url || 'http://ollama:11434';
@@ -360,7 +347,6 @@
 		}
 	}
 
-	// --- Profile Functions ---
 	async function saveProfile() {
 		if (!email) return;
 		loading = true;
@@ -381,7 +367,6 @@
 		}
 	}
 
-	// --- Security Functions ---
 	async function changePassword() {
 		if (!currentPassword || !newPassword || !confirmPassword) {
 			error = 'Fill all fields';
@@ -417,7 +402,6 @@
 		}
 	}
 
-	// --- Developer Functions ---
 	async function fetchApiKeys() {
 		const res = await fetch(
 			`${PUBLIC_BACKEND_URL}/auth/api-keys?email=${encodeURIComponent(email)}`
@@ -479,7 +463,6 @@
 			<p class="mt-2" style="color: var(--text-muted);">Manage your account and AI preferences</p>
 		</header>
 
-		<!-- Tabs -->
 		<div class="flex gap-2 mb-6 border-b" style="border-color: var(--border);">
 			{#each [{ id: 'profile', label: 'Profile', icon: 'mdi:account' }, { id: 'security', label: 'Security', icon: 'mdi:shield-lock' }, { id: 'developer', label: 'Developer', icon: 'mdi:code-braces' }, { id: 'models', label: 'AI Models', icon: 'mdi:robot' }, { id: 'stats', label: 'Stats', icon: 'mdi:chart-bar' }] as tab}
 				<button
@@ -496,7 +479,6 @@
 			{/each}
 		</div>
 
-		<!-- Notifications -->
 		{#if error}
 			<div
 				class="mb-6 p-4 rounded flex items-center gap-2 border border-red-500/20"
@@ -520,7 +502,6 @@
 			class="rounded p-6 border"
 			style="background-color: var(--background-light); border-color: var(--border);"
 		>
-			<!-- PROFILE TAB -->
 			{#if activeTab === 'profile'}
 				{#if !session?.user}
 					<p class="text-center py-4" style="color: var(--text-muted);">
@@ -582,8 +563,6 @@
 						</div>
 					</div>
 				{/if}
-
-				<!-- SECURITY TAB -->
 			{:else if activeTab === 'security'}
 				{#if !session?.user}
 					<p class="text-center py-4" style="color: var(--text-muted);">
@@ -627,8 +606,6 @@
 						</button>
 					</div>
 				{/if}
-
-				<!-- DEVELOPER TAB -->
 			{:else if activeTab === 'developer'}
 				{#if !session?.user}
 					<p class="text-center py-4" style="color: var(--text-muted);">
@@ -636,7 +613,6 @@
 					</p>
 				{:else}
 					<div class="space-y-8">
-						<!-- API Keys -->
 						<div>
 							<h3 class="font-semibold mb-3 flex items-center gap-2" style="color: var(--text);">
 								<Icon icon="mdi:key-variant" /> API Keys
@@ -703,7 +679,6 @@
 							</div>
 						</div>
 
-						<!-- Webhooks -->
 						<div>
 							<h3 class="font-semibold mb-3 flex items-center gap-2" style="color: var(--text);">
 								<Icon icon="mdi:webhook" /> Webhooks
@@ -748,8 +723,6 @@
 						</div>
 					</div>
 				{/if}
-
-				<!-- STATS TAB -->
 			{:else if activeTab === 'stats'}
 				{#if !statsData}
 					<div class="py-12 flex justify-center">
@@ -757,7 +730,6 @@
 					</div>
 				{:else}
 					<div class="space-y-6">
-						<!-- Summary Cards -->
 						<div class="grid grid-cols-2 lg:grid-cols-5 gap-4">
 							<div
 								class="p-4 rounded border"
@@ -831,9 +803,7 @@
 							</div>
 						</div>
 
-						<!-- Charts Grid -->
 						<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-							<!-- Notebooks -->
 							<div
 								class="p-4 rounded border"
 								style="border-color: var(--border); background-color: var(--background);"
@@ -846,7 +816,6 @@
 								</div>
 							</div>
 
-							<!-- Sources -->
 							<div
 								class="p-4 rounded border"
 								style="border-color: var(--border); background-color: var(--background);"
@@ -859,7 +828,6 @@
 								</div>
 							</div>
 
-							<!-- API Requests -->
 							<div
 								class="p-4 rounded border lg:col-span-2"
 								style="border-color: var(--border); background-color: var(--background);"
@@ -874,8 +842,6 @@
 						</div>
 					</div>
 				{/if}
-
-				<!-- AI MODELS TAB -->
 			{:else if activeTab === 'models'}
 				{#if fetching}
 					<div class="flex flex-col items-center justify-center py-12 opacity-50">
@@ -889,7 +855,6 @@
 					</div>
 				{:else}
 					<div class="space-y-6">
-						<!-- Provider Selection Section -->
 						<div>
 							<h3 class="font-semibold mb-3 flex items-center gap-2" style="color: var(--text);">
 								<Icon icon="mdi:cloud-outline" /> AI Providers
@@ -900,7 +865,6 @@
 							</p>
 
 							<div class="grid gap-4 md:grid-cols-2">
-								<!-- Chat Provider -->
 								<div
 									class="p-4 rounded border"
 									style="border-color: var(--border); background-color: var(--background);"
@@ -965,7 +929,6 @@
 									{/if}
 								</div>
 
-								<!-- Embedding Provider -->
 								<div
 									class="p-4 rounded border"
 									style="border-color: var(--border); background-color: var(--background);"
@@ -1031,7 +994,6 @@
 								</div>
 							</div>
 
-							<!-- Ollama URL Config (show if Ollama is selected) -->
 							{#if chatProvider === 'ollama' || embeddingProvider === 'ollama'}
 								<div
 									class="p-4 rounded border mt-4"
@@ -1073,7 +1035,6 @@
 							</button>
 						</div>
 
-						<!-- API Keys Section -->
 						<div class="pt-6 border-t" style="border-color: var(--border);">
 							<h3 class="font-semibold mb-3 flex items-center gap-2" style="color: var(--text);">
 								<Icon icon="mdi:key" /> API Keys
@@ -1082,7 +1043,6 @@
 								Configure API keys for cloud AI providers. Keys are stored securely.
 							</p>
 
-							<!-- Current Keys Status -->
 							<div class="grid gap-2 mb-4">
 								{#each ['openai', 'anthropic', 'gemini'] as provider}
 									<div
@@ -1121,7 +1081,6 @@
 								{/each}
 							</div>
 
-							<!-- Add New Key -->
 							<div class="flex gap-2 items-end">
 								<div class="flex-1">
 									<label
@@ -1167,7 +1126,6 @@
 							</div>
 						</div>
 
-						<!-- Ollama: Pull New Model -->
 						{#if chatProvider === 'ollama' || embeddingProvider === 'ollama'}
 							<div class="pt-6 border-t" style="border-color: var(--border);">
 								<h3 class="font-semibold mb-3 flex items-center gap-2" style="color: var(--text);">

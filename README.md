@@ -3,7 +3,7 @@
 # OBookLLM - Open Source NotebookLLM
 
 ![Open Source](https://forthebadge.com/api/badges/generate?primaryLabel=OPEN+SOURCE&secondaryLabel=LOVE&secondaryIcon=heart&secondaryIconColor=%23D14836&primaryBGColor=%23555555&secondaryBGColor=%23ffffff&secondaryTextColor=%23555555)
-![Version](https://forthebadge.com/api/badges/generate?primaryLabel=VERSION&secondaryLabel=0.1.0&primaryBGColor=%23555555&secondaryBGColor=%23ffffff&secondaryTextColor=%23555555)
+![Version](https://forthebadge.com/api/badges/generate?primaryLabel=VERSION&secondaryLabel=0.2.0&primaryBGColor=%23555555&secondaryBGColor=%23ffffff&secondaryTextColor=%23555555)
 
 </div>
 
@@ -65,7 +65,29 @@ The easiest way to run OBookLLM is with Docker Compose. This starts the Frontend
 
 3.  **Access the App**:
     -   **Frontend**: [http://localhost:3000](http://localhost:3000)
-    -   **Backend API**: [http://localhost:8008/docs](http://localhost:8008/docs)
+
+## Table of Contents
+
+-   [Frontend Documentation](./frontend/README.md)
+-   [Backend Documentation](./backend/README.md)
+-   [Hardware Requirements](#hardware-requirements)
+-   [Manual Installation](#manual-installation)
+-   [Configuration](#configuration)
+-   [Roadmap](#roadmap)
+
+## Roadmap
+
+-   [x] Basic RAG (PDF, Text, Markdown)
+-   [x] Audio Transcription (Faster Whisper)
+-   [x] YouTube Integration
+-   [x] OCR Support (Tesseract)
+-   [x] Custom Svelte Frontend
+-   [x] Docker support
+-   [ ] Podcast Generation (Conversational Audio)
+-   [ ] User Authentication (OIDC/OAuth)
+-   [ ] Multi-User Support
+-   [ ] Web Search Agent (Search Integration)
+-   [ ] Mobile Responsive UI Improvements
 
 ## Manual Installation
 
