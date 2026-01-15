@@ -1,7 +1,12 @@
-import { json } from '@sveltejs/kit';
+import { json, error } from '@sveltejs/kit';
 import { env } from '$env/dynamic/private';
 
-export async function POST({ request, fetch }) {
+export async function POST({ request, fetch, locals }) {
+    const session = await locals.auth();
+    if (!session?.user) {
+        throw error(401, 'Unauthorized');
+    }
+
     const body = await request.json();
     const res = await fetch(`${env.BACKEND_URL}/notebooks/create`, {
         method: 'POST',

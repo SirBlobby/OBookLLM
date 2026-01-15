@@ -1,7 +1,6 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
 	import { page } from '$app/stores';
-	import { signOut } from '@auth/sveltekit/client';
 	import { onMount } from 'svelte';
 	import { API_BASE_URL } from '$lib/api';
 
@@ -207,17 +206,19 @@
 		{/if}
 
 		{#if session}
-			<button
-				onclick={() => signOut()}
-				class="flex items-center {isCollapsed
-					? 'justify-center'
-					: 'gap-3'} text-sm w-full px-3 py-2.5 rounded-lg transition-all duration-200 hover:bg-red-500/10 mt-1"
-				style="color: var(--error);"
-				title="Sign Out"
-			>
-				<Icon icon="mdi:logout" width="20" />
-				{#if !isCollapsed}<span class="font-medium">Sign Out</span>{/if}
-			</button>
+			<form method="POST" action="/auth/signout">
+				<button
+					type="submit"
+					class="flex items-center {isCollapsed
+						? 'justify-center'
+						: 'gap-3'} text-sm w-full px-3 py-2.5 rounded-lg transition-all duration-200 hover:bg-red-500/10 mt-1"
+					style="color: var(--error);"
+					title="Sign Out"
+				>
+					<Icon icon="mdi:logout" width="20" />
+					{#if !isCollapsed}<span class="font-medium">Sign Out</span>{/if}
+				</button>
+			</form>
 		{:else}
 			<a
 				href="/login"

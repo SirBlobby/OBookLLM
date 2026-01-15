@@ -1,6 +1,6 @@
 {
 	"name": "obookllm",
-	"version": "0.3.0",
+	"version": "0.3.4",
 	"private": true,
 	"scripts": {
 		"dev": "vite dev --host",

@@ -67,7 +67,7 @@
 			</div>
 			<h1 class="text-2xl font-bold" style="color: var(--text);">Create an account</h1>
 			<p class="mt-2" style="color: var(--text-muted);">
-				Join NotebookClone and start chatting with your documents
+				Join OBookLLM and start chatting with your documents
 			</p>
 		</div>
 
@@ -163,25 +163,6 @@
 							style="background-color: var(--background); border: 1px solid var(--border); color: var(--text); --tw-ring-color: var(--primary);"
 						/>
 					</div>
-				</div>
-
-				<div class="flex items-start gap-2">
-					<input
-						type="checkbox"
-						id="terms"
-						class="mt-1 rounded"
-						style="accent-color: var(--primary);"
-						required
-					/>
-					<label for="terms" class="text-sm" style="color: var(--text-muted);">
-						I agree to the <a href="/terms" style="color: var(--primary);" class="hover:underline"
-							>Terms of Service</a
-						>
-						and
-						<a href="/privacy" style="color: var(--primary);" class="hover:underline"
-							>Privacy Policy</a
-						>
-					</label>
 				</div>
 
 				<button

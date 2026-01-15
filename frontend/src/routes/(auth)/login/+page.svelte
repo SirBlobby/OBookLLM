@@ -53,7 +53,7 @@
 				<Icon icon="mdi:notebook" width="32" />
 			</div>
 			<h1 class="text-2xl font-bold" style="color: var(--text);">Welcome back</h1>
-			<p class="mt-2" style="color: var(--text-muted);">Sign in to your NotebookClone account</p>
+			<p class="mt-2" style="color: var(--text-muted);">Sign in to your OBookLLM account</p>
 		</div>
 
 		<!-- Form Card -->

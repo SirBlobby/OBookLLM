@@ -3,7 +3,7 @@
 # OBookLLM - Open Source NotebookLLM
 
 ![Open Source](https://forthebadge.com/api/badges/generate?primaryLabel=OPEN+SOURCE&secondaryLabel=LOVE&secondaryIcon=heart&secondaryIconColor=%23D14836&primaryBGColor=%23555555&secondaryBGColor=%23ffffff&secondaryTextColor=%23555555)
-![Version](https://forthebadge.com/api/badges/generate?primaryLabel=VERSION&secondaryLabel=0.3.0&primaryBGColor=%23555555&secondaryBGColor=%23ffffff&secondaryTextColor=%23555555)
+![Version](https://forthebadge.com/api/badges/generate?primaryLabel=VERSION&secondaryLabel=0.3.4&primaryBGColor=%23555555&secondaryBGColor=%23ffffff&secondaryTextColor=%23555555)
 
 </div>
 
