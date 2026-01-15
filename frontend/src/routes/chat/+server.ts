@@ -1,9 +1,9 @@
-import { BACKEND_URL } from '$env/static/private';
+import { PUBLIC_BACKEND_URL } from '$env/static/public';
 
 export async function POST({ request, fetch }) {
     const body = await request.json();
     
-    const res = await fetch(`${BACKEND_URL}/chat`, {
+    const res = await fetch(`${PUBLIC_BACKEND_URL}/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)

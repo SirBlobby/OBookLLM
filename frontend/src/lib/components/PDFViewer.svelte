@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { onMount, tick } from 'svelte';
 	import type * as PDFJS from 'pdfjs-dist';
-	import 'pdfjs-dist/web/pdf_viewer.css';
 
 	interface Props {
 		url: string;

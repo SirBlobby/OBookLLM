@@ -81,13 +81,9 @@ The easiest way to run OBookLLM is with Docker Compose. This starts the Frontend
 -   [x] Audio Transcription (Faster Whisper)
 -   [x] YouTube Integration
 -   [x] OCR Support (Tesseract)
--   [x] Custom Svelte Frontend
 -   [x] Docker support
 -   [ ] Podcast Generation (Conversational Audio)
--   [ ] User Authentication (OIDC/OAuth)
--   [ ] Multi-User Support
 -   [ ] Web Search Agent (Search Integration)
--   [ ] Mobile Responsive UI Improvements
 
 ## Manual Installation
 
