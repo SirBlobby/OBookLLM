@@ -6,6 +6,7 @@ python-multipart
 python-dotenv
 tqdm
 httpx
+bcrypt
 
 # Database
 chromadb

@@ -2,8 +2,7 @@ import { json, error } from '@sveltejs/kit';
 import { env } from '$env/dynamic/private';
 
 export async function GET({ fetch, locals }) {
-    const session = await locals.auth();
-    if (!session?.user) {
+    if (!locals.session?.user) {
         throw error(401, 'Unauthorized');
     }
 

@@ -687,15 +687,15 @@ class RegisterRequest(BaseModel):
 
 @app.post("/auth/register")
 async def register_user(request: RegisterRequest):
-    import hashlib
+    import bcrypt
     
 
     existing_user = await db.users.find_one({"email": request.email})
     if existing_user:
         raise HTTPException(status_code=400, detail="Email already registered")
     
-    # Hash password (simple hash for demo - use bcrypt in production)
-    password_hash = hashlib.sha256(request.password.encode()).hexdigest()
+    # Hash password with bcrypt
+    password_hash = bcrypt.hashpw(request.password.encode(), bcrypt.gensalt(12)).decode()
     
     new_user = {
         "name": request.name,
@@ -839,17 +839,18 @@ class ChangePasswordRequest(BaseModel):
 
 @app.post("/auth/password")
 async def change_password(request: ChangePasswordRequest):
-    import hashlib
+    import bcrypt
     
     user = await db.users.find_one({"email": request.email})
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     
-    current_hash = hashlib.sha256(request.current_password.encode()).hexdigest()
-    if user.get("password") != current_hash:
+    # Verify current password with bcrypt
+    if not bcrypt.checkpw(request.current_password.encode(), user.get("password", "").encode()):
         raise HTTPException(status_code=400, detail="Incorrect current password")
-        
-    new_hash = hashlib.sha256(request.new_password.encode()).hexdigest()
+    
+    # Hash new password with bcrypt
+    new_hash = bcrypt.hashpw(request.new_password.encode(), bcrypt.gensalt(12)).decode()
     await db.users.update_one({"email": request.email}, {"$set": {"password": new_hash}})
     
     return {"status": "ok"}

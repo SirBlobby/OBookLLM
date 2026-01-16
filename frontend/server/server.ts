@@ -99,6 +99,20 @@ const server = http.createServer((req, res) => {
     const url = req.url || '/';
     const isStatic = isStaticAsset(url);
 
+    // CORS headers
+    const origin = req.headers.origin || '*';
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+
+    // Handle preflight requests
+    if (method === 'OPTIONS') {
+        res.statusCode = 204;
+        res.end();
+        return;
+    }
+
     // Only log non-static requests on incoming
     if (!isStatic) {
         console.log(

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
 	import { page } from '$app/stores';
+	import { invalidateAll, goto } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import { API_BASE_URL } from '$lib/api';
 
@@ -18,6 +19,17 @@
 
 	function toggleSidebar() {
 		isCollapsed = !isCollapsed;
+	}
+
+	async function handleSignOut() {
+		try {
+			await fetch('/api/auth/logout', { method: 'POST' });
+			await invalidateAll();
+			goto('/login');
+		} catch (error) {
+			console.error('Sign out error:', error);
+			goto('/login');
+		}
 	}
 </script>
 
@@ -206,19 +218,17 @@
 		{/if}
 
 		{#if session}
-			<form method="POST" action="/auth/signout">
-				<button
-					type="submit"
-					class="flex items-center {isCollapsed
-						? 'justify-center'
-						: 'gap-3'} text-sm w-full px-3 py-2.5 rounded-lg transition-all duration-200 hover:bg-red-500/10 mt-1"
-					style="color: var(--error);"
-					title="Sign Out"
-				>
-					<Icon icon="mdi:logout" width="20" />
-					{#if !isCollapsed}<span class="font-medium">Sign Out</span>{/if}
-				</button>
-			</form>
+			<button
+				onclick={handleSignOut}
+				class="flex items-center {isCollapsed
+					? 'justify-center'
+					: 'gap-3'} text-sm w-full px-3 py-2.5 rounded-lg transition-all duration-200 hover:bg-red-500/10 mt-1"
+				style="color: var(--error);"
+				title="Sign Out"
+			>
+				<Icon icon="mdi:logout" width="20" />
+				{#if !isCollapsed}<span class="font-medium">Sign Out</span>{/if}
+			</button>
 		{:else}
 			<a
 				href="/login"

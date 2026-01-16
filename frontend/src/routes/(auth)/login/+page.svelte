@@ -1,6 +1,5 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import { signIn } from '@auth/sveltekit/client';
 	import { goto, invalidateAll } from '$app/navigation';
 
 	let email = $state('');
@@ -19,17 +18,19 @@
 		error = '';
 
 		try {
-			const result = await signIn('credentials', {
-				email,
-				password,
-				redirect: false
+			const res = await fetch('/api/auth/login', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ email, password })
 			});
 
-			if (result?.error) {
-				error = 'Invalid email or password';
-			} else {
+			const data = await res.json();
+
+			if (res.ok) {
 				await invalidateAll();
 				goto('/');
+			} else {
+				error = data.error || 'Invalid email or password';
 			}
 		} catch (e) {
 			error = 'An error occurred. Please try again.';
@@ -108,16 +109,6 @@
 							style="background-color: var(--background); border: 1px solid var(--border); color: var(--text); --tw-ring-color: var(--primary);"
 						/>
 					</div>
-				</div>
-
-				<div class="flex items-center justify-between text-sm">
-					<label class="flex items-center gap-2 cursor-pointer">
-						<input type="checkbox" class="rounded" style="accent-color: var(--primary);" />
-						<span style="color: var(--text-muted);">Remember me</span>
-					</label>
-					<a href="/forgot-password" style="color: var(--primary);" class="hover:underline"
-						>Forgot password?</a
-					>
 				</div>
 
 				<button
