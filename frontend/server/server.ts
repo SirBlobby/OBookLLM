@@ -50,7 +50,8 @@ function isStaticAsset(url: string): boolean {
            url.endsWith('.jpg') ||
            url.endsWith('.svg') ||
            url.endsWith('.woff') ||
-           url.endsWith('.woff2');
+           url.endsWith('.woff2') ||
+           url.includes('__data.json');
 }
 
 // Request counter
@@ -144,8 +145,8 @@ const server = http.createServer((req, res) => {
         return originalEnd(chunk, encoding, callback);
     };
 
-    // Proxy /api/* requests to backend
-    if (url.startsWith('/api/')) {
+    // Proxy /api/* requests to backend (except /api/auth/* which is handled by frontend)
+    if (url.startsWith('/api/') && !url.startsWith('/api/auth/')) {
         const backendPath = url.replace('/api', '');
         proxyToBackend(req, res, id, backendPath);
         return;
