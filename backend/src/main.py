@@ -19,6 +19,7 @@ from src import rag
 
 
 MONGODB_URI = os.getenv("MONGODB_URI", "mongodb://localhost:27017")
+MAX_FULL_CONTEXT = 100000  # Maximum characters to load as full context (100K)
 
 
 client = AsyncIOMotorClient(MONGODB_URI)
@@ -1104,6 +1105,96 @@ async def get_provider_models(provider_name: str):
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to list models: {str(e)}")
+
+
+# ===== TTS (Text-to-Speech) Endpoints =====
+
+class TTSRequest(BaseModel):
+    text: str
+    speaker: str = "conversational_a"  # conversational_a or conversational_b
+    style: str = "reading"  # 'reading' for accurate, 'conversational' for expressive
+
+
+@app.get("/tts/status")
+async def tts_status():
+    """Check if TTS is available and ready."""
+    try:
+        from src.csm.tts_service import TTSService
+        available = TTSService.is_available()
+        error = TTSService.get_initialization_error()
+        return {
+            "available": available,
+            "error": error,
+            "speakers": ["conversational_a", "conversational_b"] if available else []
+        }
+    except ImportError as e:
+        return {
+            "available": False,
+            "error": f"TTS dependencies not installed: {str(e)}",
+            "speakers": []
+        }
+    except Exception as e:
+        return {
+            "available": False,
+            "error": str(e),
+            "speakers": []
+        }
+
+
+@app.post("/tts/generate")
+async def generate_tts(request: TTSRequest, background_tasks: BackgroundTasks):
+    """
+    Generate text-to-speech audio from text.
+    
+    Returns WAV audio file.
+    """
+    from fastapi.responses import Response
+    
+    if not request.text.strip():
+        raise HTTPException(status_code=400, detail="Text is required")
+    
+    if len(request.text) > 5000:
+        raise HTTPException(status_code=400, detail="Text too long. Maximum 5000 characters.")
+    
+    try:
+        from src.csm.tts_service import get_tts_service, TTSConfig
+        
+        service = get_tts_service()
+        
+        # Configure based on style
+        if request.style == "conversational":
+            config = TTSConfig(
+                speaker=request.speaker,
+                temperature=0.9,
+                topk=50,
+                style="conversational"
+            )
+        else:  # reading mode (default)
+            config = TTSConfig(
+                speaker=request.speaker,
+                temperature=0.7,
+                topk=30,
+                style="reading"
+            )
+        
+        wav_bytes, sample_rate = service.generate_speech(request.text, config)
+        
+        return Response(
+            content=wav_bytes,
+            media_type="audio/wav",
+            headers={
+                "Content-Disposition": "inline; filename=tts_output.wav",
+                "X-Sample-Rate": str(sample_rate)
+            }
+        )
+    except ImportError as e:
+        raise HTTPException(
+            status_code=503, 
+            detail=f"TTS not available: {str(e)}. Please install CSM dependencies."
+        )
+    except Exception as e:
+        print(f"TTS generation error: {e}")
+        raise HTTPException(status_code=500, detail=f"TTS generation failed: {str(e)}")
 
 
 if __name__ == "__main__":

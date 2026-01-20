@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
 	import { marked } from 'marked';
+	import { API_BASE_URL } from '$lib/api';
 
 	let {
 		messages,
@@ -23,6 +24,108 @@
 	} = $props();
 	let input = $state('');
 	let chatContainer = $state<HTMLElement>();
+
+	// TTS (Text-to-Speech) State
+	let ttsAvailable = $state<boolean | null>(null);
+	let ttsLoading = $state<number | null>(null); // Index of message being generated
+	let ttsAudio = $state<{ index: number; url: string; playing: boolean } | null>(null);
+	let ttsError = $state<string | null>(null);
+	let audioElement = $state<HTMLAudioElement | null>(null);
+
+	// Check TTS availability on mount
+	$effect(() => {
+		checkTTSStatus();
+	});
+
+	async function checkTTSStatus() {
+		try {
+			const res = await fetch(`${API_BASE_URL}/tts/status`);
+			if (res.ok) {
+				const data = await res.json();
+				ttsAvailable = data.available;
+			} else {
+				ttsAvailable = false;
+			}
+		} catch (e) {
+			ttsAvailable = false;
+		}
+	}
+
+	async function handleReadAloud(msgIndex: number, content: string) {
+		// If already playing this message, toggle pause/play
+		if (ttsAudio?.index === msgIndex && audioElement) {
+			if (ttsAudio.playing) {
+				audioElement.pause();
+				ttsAudio = { ...ttsAudio, playing: false };
+			} else {
+				audioElement.play();
+				ttsAudio = { ...ttsAudio, playing: true };
+			}
+			return;
+		}
+
+		// Stop any existing audio
+		if (audioElement) {
+			audioElement.pause();
+			URL.revokeObjectURL(ttsAudio?.url || '');
+		}
+
+		ttsLoading = msgIndex;
+		ttsError = null;
+
+		try {
+			const res = await fetch(`${API_BASE_URL}/tts/generate`, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					text: content,
+					speaker: 'conversational_a'
+				})
+			});
+
+			if (!res.ok) {
+				const errorData = await res.json().catch(() => ({ detail: 'TTS generation failed' }));
+				throw new Error(errorData.detail || 'TTS generation failed');
+			}
+
+			const audioBlob = await res.blob();
+			const audioUrl = URL.createObjectURL(audioBlob);
+
+			ttsAudio = { index: msgIndex, url: audioUrl, playing: true };
+
+			// Create and play audio
+			const audio = new Audio(audioUrl);
+			audioElement = audio;
+
+			audio.onended = () => {
+				ttsAudio = ttsAudio ? { ...ttsAudio, playing: false } : null;
+			};
+
+			audio.onerror = () => {
+				ttsError = 'Failed to play audio';
+				ttsAudio = null;
+			};
+
+			await audio.play();
+		} catch (e: any) {
+			console.error('TTS error:', e);
+			ttsError = e.message || 'Failed to generate speech';
+			ttsAudio = null;
+		} finally {
+			ttsLoading = null;
+		}
+	}
+
+	function stopTTS() {
+		if (audioElement) {
+			audioElement.pause();
+			audioElement.currentTime = 0;
+		}
+		if (ttsAudio) {
+			URL.revokeObjectURL(ttsAudio.url);
+		}
+		ttsAudio = null;
+	}
 
 	function handleSend() {
 		if (!input.trim() || loading) return;
@@ -193,6 +296,48 @@
 											</button>
 										{/each}
 									</div>
+								</div>
+							{/if}
+
+							<!-- TTS Read Aloud Button -->
+							{#if ttsAvailable && msg.content.trim().length > 0}
+								<div
+									class="mt-3 pt-2 border-t border-black/5 dark:border-white/5 flex items-center gap-2"
+								>
+									<button
+										class="tts-btn flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-md transition-all"
+										class:tts-active={ttsAudio?.index === messages.indexOf(msg)}
+										disabled={ttsLoading !== null}
+										onclick={() => handleReadAloud(messages.indexOf(msg), msg.content)}
+									>
+										{#if ttsLoading === messages.indexOf(msg)}
+											<Icon icon="mdi:loading" width="14" class="animate-spin" />
+											<span>Generating...</span>
+										{:else if ttsAudio?.index === messages.indexOf(msg)}
+											<Icon icon={ttsAudio.playing ? 'mdi:pause' : 'mdi:play'} width="14" />
+											<span>{ttsAudio.playing ? 'Pause' : 'Resume'}</span>
+										{:else}
+											<Icon icon="mdi:volume-high" width="14" />
+											<span>Read Aloud</span>
+										{/if}
+									</button>
+
+									{#if ttsAudio?.index === messages.indexOf(msg)}
+										<button
+											class="text-xs px-2 py-1 rounded hover:bg-red-500/20 text-red-400 transition-colors"
+											onclick={stopTTS}
+											title="Stop"
+										>
+											<Icon icon="mdi:stop" width="14" />
+										</button>
+									{/if}
+								</div>
+							{/if}
+
+							{#if ttsError && ttsLoading === null}
+								<div class="mt-2 text-xs text-red-400 flex items-center gap-1">
+									<Icon icon="mdi:alert-circle" width="12" />
+									{ttsError}
 								</div>
 							{/if}
 						</div>
@@ -447,5 +592,31 @@
 		max-height: 150px;
 		overflow-y: auto;
 		font-style: italic;
+	}
+
+	/* TTS Read Aloud Button Styles */
+	.tts-btn {
+		background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(168, 85, 247, 0.1));
+		border: 1px solid rgba(139, 92, 246, 0.2);
+		color: var(--text-muted);
+		cursor: pointer;
+	}
+
+	.tts-btn:hover:not(:disabled) {
+		background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(168, 85, 247, 0.2));
+		border-color: rgba(139, 92, 246, 0.4);
+		color: var(--primary);
+	}
+
+	.tts-btn:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
+	}
+
+	.tts-btn.tts-active {
+		background: linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(168, 85, 247, 0.3));
+		border-color: var(--primary);
+		color: var(--primary);
+		box-shadow: 0 0 12px rgba(139, 92, 246, 0.3);
 	}
 </style>
